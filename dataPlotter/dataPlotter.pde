@@ -11,7 +11,7 @@ String serialPortName = "/dev/ttyUSB0";
 // If you want to debug the plotter without using a real serial port set this to true
 /*====================== SETTINGS END =======================*/
 
-/*====================== Init data structs ==================*/
+/*====================== INIT DATA STRUCTS ==================*/
 Serial serialPort; // Serial port object
 // interface stuff
 ControlP5 cp5;
@@ -33,7 +33,7 @@ float[] lineGraphSampleNumbers = new float[100];
 color[] graphColors = new color[6];
 
 float x_acc, y_acc, z_acc;
-/*====================== Init data structs ==================*/
+/*====================== INIT DATA STRUCTS ==================*/
 
 void setup() {
   surface.setTitle("Data plotter");
@@ -56,22 +56,19 @@ void setup() {
   for (int i=0; i<xlineGraphValues.length; i++) {
     for (int k=0; k<xlineGraphValues[0].length; k++) {
       xlineGraphValues[i][k] = 0;
-      if (i==0)
-        lineGraphSampleNumbers[k] = k;
+      if (i==0){ lineGraphSampleNumbers[k] = k; }
     }
   }
   for (int i=0; i<ylineGraphValues.length; i++) {
     for (int k=0; k<ylineGraphValues[0].length; k++) {
       ylineGraphValues[i][k] = 0;
-      if (i==0)
-        lineGraphSampleNumbers[k] = k;
+      if (i==0){ lineGraphSampleNumbers[k] = k; }
     }
   }
   for (int i=0; i<zlineGraphValues.length; i++) {
     for (int k=0; k<zlineGraphValues[0].length; k++) {
       zlineGraphValues[i][k] = 0;
-      if (i==0)
-        lineGraphSampleNumbers[k] = k;
+      if (i==0){ lineGraphSampleNumbers[k] = k; }
     }
   }
   
@@ -139,7 +136,7 @@ void setup() {
 
 byte[] inBuffer = new byte[100]; // holds serial message
 void draw() {
-  //========================handle input======================================
+  //========================HANDEL INPUT======================================
   /* Read serial and update values */
   if (serialPort.available() > 0) {
     String inString = "";
@@ -147,7 +144,7 @@ void draw() {
     //get rid of empty lines
     if (inString.equals("") || inString.equals("\n")){ return; }
     try {
-      print(inString);
+      //print(inString);
       // Parse the data
       String[] dataStrings = split(inString, '|');
       String dataType = dataStrings[0];
@@ -167,9 +164,13 @@ void draw() {
     Arrays.fill(xData,x_acc);
     Arrays.fill(yData,y_acc);
     Arrays.fill(zData,z_acc);
+    
+    //for(int i = 0; i<xData.length; i++){
+    //  print(xData[i] + " ");
+    //}
+    //println("\n");
 
-
-  //========================handle input======================================
+  //========================HANDEL INTPUT======================================
     
     // count number of bars and line graphs to hide
     int numberOfInvisibleLineGraphs = 0;
@@ -213,6 +214,11 @@ void draw() {
       catch (Exception e){}
     }
   }
+//========================MODIFERS AND FILTER FUNCTIONS======================================
+//index 1 -> 5 avaliable
+supressNonMovingNoise(1);
+
+//========================MODIFERS AND FILTER FUNCTIONS======================================     
   // draw the line graphs
   background(255); 
   xLineGraph.DrawAxis();
@@ -235,6 +241,19 @@ void draw() {
   }
 }
 
+//========================MODIFERS AND FILTER FUNCTIONS======================================
+void supressNonMovingNoise(int modifier_idx){
+  try {
+    for (int k = 0; k < xlineGraphValues[modifier_idx].length; k++) {
+      xlineGraphValues[modifier_idx][k] = (xlineGraphValues[modifier_idx][k] < 0.05 && xlineGraphValues[modifier_idx][k] > -0.05) ? 0 : xlineGraphValues[modifier_idx][k];
+      ylineGraphValues[modifier_idx][k] = (ylineGraphValues[modifier_idx][k] < 0.05 && ylineGraphValues[modifier_idx][k] > -0.05) ? 0 : ylineGraphValues[modifier_idx][k];
+      zlineGraphValues[modifier_idx][k] = (zlineGraphValues[modifier_idx][k] < -0.25 && zlineGraphValues[modifier_idx][k] > -0.35) ? 0 : zlineGraphValues[modifier_idx][k];
+    }
+  } catch (Exception e){}
+}
+
+//========================MODIFERS AND FILTER FUNCTIONS======================================
+
 // called each time the chart settings are changed by the user 
 void setChartSettings() {
   xLineGraph.xLabel=" Samples ";
@@ -243,8 +262,8 @@ void setChartSettings() {
   xLineGraph.xDiv=20;  
   xLineGraph.xMax=0; 
   xLineGraph.xMin=-100;  
-  xLineGraph.yMax=int(getPlotterConfigString("xAxisMinY")); 
-  xLineGraph.yMin=int(getPlotterConfigString("xAxisMaxY"));
+  xLineGraph.yMax=float(getPlotterConfigString("xAxisMinY")); 
+  xLineGraph.yMin=float(getPlotterConfigString("xAxisMaxY"));
   
   yLineGraph.xLabel=" Samples ";
   yLineGraph.yLabel="Y axis readings";
@@ -252,8 +271,8 @@ void setChartSettings() {
   yLineGraph.xDiv=20;  
   yLineGraph.xMax=0; 
   yLineGraph.xMin=-100;  
-  yLineGraph.yMax=int(getPlotterConfigString("yAxisMinY")); 
-  yLineGraph.yMin=int(getPlotterConfigString("yAxisMaxY"));
+  yLineGraph.yMax=float(getPlotterConfigString("yAxisMinY")); 
+  yLineGraph.yMin=float(getPlotterConfigString("yAxisMaxY"));
   
   zLineGraph.xLabel="Samples ";
   zLineGraph.yLabel="Z axis readings";
@@ -261,8 +280,8 @@ void setChartSettings() {
   zLineGraph.xDiv=20;  
   zLineGraph.xMax=0; 
   zLineGraph.xMin=-100;  
-  zLineGraph.yMax=int(getPlotterConfigString("zAxisMinY")); 
-  zLineGraph.yMin=int(getPlotterConfigString("zAxisMaxY"));
+  zLineGraph.yMax=float(getPlotterConfigString("zAxisMinY")); 
+  zLineGraph.yMin=float(getPlotterConfigString("zAxisMaxY"));
 }
 
 // handle gui actions
